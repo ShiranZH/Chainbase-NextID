@@ -8,23 +8,23 @@ import QueryChainbase from './components/QueryChainbase.vue';
     <a href="https://chainbase.com/" target="_blank">
       <img src="/chainbase.svg" class="logo chainbase" alt="Chainbase logo" />
     </a>
-    <a href="https://next.id/" target="_blank">
+    <!-- <a href="https://next.id/" target="_blank">
       <img src="./assets/nextid.svg" class="logo nextid" alt="NextIDs logo" />
-    </a>
+    </a> -->
   </div>
-  <QueryChainbase msg="Chainbase <> NextID" />
+  <QueryChainbase msg="Chainbase" />
   <!-- <HelloWorld msg="Vite + Vue"/> -->
   <p>
     Check out
     <a href="https://chainbase.com/" target="_blank">chainbase.com</a>,
     a leading Web3 blockchain interaction layer infrastructure.
   </p>
-  <p>
+  <!-- <p>
     Check out
     <a href="https://next.id/" target="_blank">Next.ID</a>,
     an open-sourced protocol that synergises your Web2 and Web3 profiles.
-  </p>
-  <p class="read-the-docs">Click on the Chainbase and NextID logos to learn more.</p>
+  </p> -->
+  <p class="read-the-docs">Click on the Chainbase logos to learn more.</p>
 
 </template>
 
