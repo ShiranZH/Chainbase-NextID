@@ -13,6 +13,8 @@ export default {
     data() {
         return {
             wallet_addr: '0xaeaecd497cd167ab0db77356f36eb9a68e888888',
+            ens_data: [],
+            ens_header: 'Name, Registrant Time, Expiration Time',
             // balance_data: [
             //     { 'Network': 'Ethereum', 'Balance': 0 },
             //     { 'Network': 'Polygon', 'Balance': 0 },
@@ -35,9 +37,36 @@ export default {
             },
             nft_data: new Set(),
             tx_data: [],
+            tx_header: 'Timestamp, To Address, Value, Gas Fee'
         }
     },
     methods: {
+
+        async getEnsDomain(wallet_addr) {
+            alert('Query wallet: ' + wallet_addr);
+
+            // Refer to https://docs.chainbase.com/reference/getaccountens.
+            const options = {
+                url: 'https://api.chainbase.online/v1/account/ens?chain_id=1&address=' + wallet_addr,
+                method: 'GET',
+                headers: {
+                    'X-API-KEY': '2LWFvlbS8dibH4k7gPEfY4WZ01D',
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            const response = await axios(options);
+            response.data.data.forEach((item, index) => {
+                this.ens_data.push(
+                    {
+                        "name": item.name,
+                        "reg_time": item.registrant_time,
+                        "exp_time": item.expiration_time,
+                    });
+            });
+
+        },
+
         async getAccountBalance(wallet_addr) {
             // const idx = 0;
             alert('Query wallet: ' + wallet_addr);
@@ -63,26 +92,12 @@ export default {
                 //         }
                 //     )));
 
-                // await axios(options)
-                //     .then(response => (this.balance_data[key] =
-                //     {
-                //         'Network': key,
-                //         'Balance': parseInt(response.data.data, 16)
-                //     }
-                //     ));
-
                 const response = await axios(options);
                 this.balance_data[key] =
                 {
                     'Network': key,
                     'Balance': parseInt(response.data.data, 16)
                 };
-                // this.$set(this.balance_data, key,
-                //     {
-                //         'Network': key,
-                //         'Balance': parseInt(response.data.data, 16)
-                //     }
-                // );
 
             }
         },
@@ -106,7 +121,11 @@ export default {
             const response = await axios(options);
             response.data.data.forEach((item, index) => {
                 if (item.image_uri != "") {
-                    this.nft_data.add(item.image_uri);
+                    if (item.image_uri.startsWith('ipfs://')) {
+                        this.nft_data.add(item.image_uri.replace('ipfs://', 'https://cloudflare-ipfs.com/ipfs/'));
+                    } else {
+                        this.nft_data.add(item.image_uri);
+                    }
                 }
                 // alert(`${item.image_uri}`);
             });
@@ -135,12 +154,14 @@ export default {
                     {
                         "timestamp": item.block_timestamp,
                         "to_addr": item.to_address,
+                        "value": item.value,
+                        "gas_fee": item.gas_used,
                     });
                 // alert(`${item.block_timestamp}`);
             });
 
         },
-    }
+    },
 }
 </script>
 
@@ -148,47 +169,93 @@ export default {
     <h1>{{ msg }}</h1>
 
     <div class="instruction">
+        <p>Click to get account portfolio overview.</p>
+        <p>Please input your wallet address:</p>
         <p>
-            Click to get account portfolio overview.
-        </p>
-        <p> Please input your wallet address:
-            <textarea v-model="wallet_addr" placeholder="Please input your wallet address..."></textarea>
+            <textarea class="input-text" v-model="wallet_addr" placeholder="Please input your wallet address..."></textarea>
         </p>
     </div>
 
-    <div id="ChainbaseData">
-        <p>
-            <OneTable :header="balance_header" :body="balance_data"></OneTable>
-        </p>
+    <div class="div">
+        <h2>Get ENS domain.</h2>
+        <div class="interaction">
+            <button @click="getEnsDomain(wallet_addr)">Get ENS domain</button>
+        </div>
+
+        <div id="ChainbaseData">
+            <p>
+                <OneTable :header="ens_header" :body="ens_data"></OneTable>
+            </p>
+        </div>
     </div>
 
-    <div class="interaction">
-        <!-- <button type="button" @click="count++">count is {{ count }}</button> -->
-        <button @click="getAccountBalance(wallet_addr)">Get native token balance</button>
+    <div>
+        <p></p>
     </div>
 
-    <div id="ChainbaseData">
-        <p>
-            <li v-for="(item, index) in nft_data" :key="index">
-                {{ item }}
-            </li>
-        </p>
+
+    <div class="div">
+        <h2>Get account balance.</h2>
+        <div class="interaction">
+            <!-- <button type="button" @click="count++">count is {{ count }}</button> -->
+            <button @click="getAccountBalance(wallet_addr)">Get native token balance</button>
+        </div>
+
+        <div id="ChainbaseData">
+            <p>
+                <OneTable :header="balance_header" :body="balance_data"></OneTable>
+            </p>
+        </div>
     </div>
 
-    <div class="interaction">
-        <button @click="getAccountNfts(wallet_addr)">Get NFTs</button>
+    <div>
+        <p></p>
     </div>
 
-    <div id="ChainbaseData">
-        <p>
-            <li v-for="(item, index) in tx_data" :key="index">
-                {{ item }}
-            </li>
-        </p>
+
+    <div class="div">
+        <h2>Get account NFTs.</h2>
+        <div class="interaction">
+            <button @click="getAccountNfts(wallet_addr)">Get NFTs</button>
+        </div>
+
+        <div id="ChainbaseData">
+            <p>
+                <li v-for="(item, index) in nft_data" :key="index">
+                    <img :src="`${item}`" :height="200" :width="200" />
+                    <!-- <p>{{ item }}</p> -->
+                </li>
+            </p>
+        </div>
     </div>
 
-    <div class="interaction">
-        <button @click="getAccountTxs(wallet_addr)">Get account transactions</button>
+    <div>
+        <p></p>
+    </div>
+
+
+    <div class="div">
+        <h2>Get 20 most recent account transactions.</h2>
+        <div class="interaction">
+            <button @click="getAccountTxs(wallet_addr)">Get account transactions</button>
+        </div>
+
+        <div id="ChainbaseData">
+            <p>
+                <OneTable :header="tx_header" :body="tx_data"></OneTable>
+            </p>
+        </div>
     </div>
 </template>
+
+<style>
+.div {
+    border: 2px #000 solid;
+}
+
+.input-text {
+    width: 50%;
+    text-align: center;
+}
+</style>
 
