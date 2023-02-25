@@ -13,8 +13,9 @@ export default {
     data() {
         return {
             wallet_addr: '0xaeaecd497cd167ab0db77356f36eb9a68e888888',
-            ens_data: [],
-            ens_header: 'Name, Registrant Time, Expiration Time',
+            ens_domain: '',
+            // ens_data: [],
+            // ens_header: 'Name, Registrant Time, Expiration Time',
             // balance_data: [
             //     { 'Network': 'Ethereum', 'Balance': 0 },
             //     { 'Network': 'Polygon', 'Balance': 0 },
@@ -45,9 +46,9 @@ export default {
         async getEnsDomain(wallet_addr) {
             alert('Query wallet: ' + wallet_addr);
 
-            // Refer to https://docs.chainbase.com/reference/getaccountens.
+            // Refer to https://docs.chainbase.com/reference/getensreverse.
             const options = {
-                url: 'https://api.chainbase.online/v1/account/ens?chain_id=1&address=' + wallet_addr,
+                url: 'https://api.chainbase.online/v1/ens/reverse?chain_id=1&address=' + wallet_addr,
                 method: 'GET',
                 headers: {
                     'X-API-KEY': '2LWFvlbS8dibH4k7gPEfY4WZ01D',
@@ -56,16 +57,33 @@ export default {
             };
 
             const response = await axios(options);
-            response.data.data.forEach((item, index) => {
-                this.ens_data.push(
-                    {
-                        "name": item.name,
-                        "reg_time": item.registrant_time,
-                        "exp_time": item.expiration_time,
-                    });
-            });
-
+            this.ens_domain = response.data.data[0].name;
         },
+
+        // async getEnsDomain(wallet_addr) {
+        //     alert('Query wallet: ' + wallet_addr);
+
+        //     // Refer to https://docs.chainbase.com/reference/getaccountens.
+        //     const options = {
+        //         url: 'https://api.chainbase.online/v1/account/ens?chain_id=1&address=' + wallet_addr,
+        //         method: 'GET',
+        //         headers: {
+        //             'X-API-KEY': '2LWFvlbS8dibH4k7gPEfY4WZ01D',
+        //             'Content-Type': 'application/json'
+        //         }
+        //     };
+
+        //     const response = await axios(options);
+        //     response.data.data.forEach((item, index) => {
+        //         this.ens_data.push(
+        //             {
+        //                 "name": item.name,
+        //                 "reg_time": item.registrant_time,
+        //                 "exp_time": item.expiration_time,
+        //             });
+        //     });
+
+        // },
 
         async getAccountBalance(wallet_addr) {
             // const idx = 0;
@@ -149,7 +167,10 @@ export default {
             };
 
             const response = await axios(options);
-            response.data.data.forEach((item, index) => {
+            response.data.data.every((item, index) => {
+                if (index >= 20) {
+                    return false;
+                }
                 this.tx_data.push(
                     {
                         "timestamp": item.block_timestamp,
@@ -158,6 +179,7 @@ export default {
                         "gas_fee": item.gas_used,
                     });
                 // alert(`${item.block_timestamp}`);
+                return true;
             });
 
         },
@@ -182,11 +204,13 @@ export default {
             <button @click="getEnsDomain(wallet_addr)">Get ENS domain</button>
         </div>
 
-        <div id="ChainbaseData">
+        <h4>{{ ens_domain }}.eth</h4>
+
+        <!-- <div id="ChainbaseData">
             <p>
                 <OneTable :header="ens_header" :body="ens_data"></OneTable>
             </p>
-        </div>
+        </div> -->
     </div>
 
     <div>
